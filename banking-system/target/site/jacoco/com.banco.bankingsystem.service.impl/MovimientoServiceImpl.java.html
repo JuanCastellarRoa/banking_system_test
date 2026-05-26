@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MovimientoServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">banking-system</a> &gt; <a href="index.source.html" class="el_package">com.banco.bankingsystem.service.impl</a> &gt; <span class="el_source">MovimientoServiceImpl.java</span></div><h1>MovimientoServiceImpl.java</h1><pre class="source lang-java linenums">package com.banco.bankingsystem.service.impl;
+
+import com.banco.bankingsystem.domain.Cuenta;
+import com.banco.bankingsystem.domain.Movimiento;
+import com.banco.bankingsystem.domain.TipoMovimiento;
+import com.banco.bankingsystem.dto.MovimientoDTO;
+import com.banco.bankingsystem.exception.CupoDiarioExcedidoException;
+import com.banco.bankingsystem.exception.RecursoNoEncontradoException;
+import com.banco.bankingsystem.exception.SaldoNoDisponibleException;
+import com.banco.bankingsystem.repository.CuentaRepository;
+import com.banco.bankingsystem.repository.MovimientoRepository;
+import com.banco.bankingsystem.service.MovimientoService;
+import com.banco.bankingsystem.strategy.MovimientoStrategy;
+import com.banco.bankingsystem.strategy.MovimientoStrategyFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+@Service
+@Transactional
+public class MovimientoServiceImpl implements MovimientoService {
+
+    /** Límite diario de retiro (suma absoluta de débitos por cuenta y día). */
+<span class="fc" id="L27">    public static final BigDecimal LIMITE_DIARIO_RETIRO = new BigDecimal(&quot;1000&quot;);</span>
+
+    private final MovimientoRepository movimientoRepository;
+    private final CuentaRepository cuentaRepository;
+    private final MovimientoStrategyFactory strategyFactory;
+
+    public MovimientoServiceImpl(MovimientoRepository movimientoRepository,
+                                 CuentaRepository cuentaRepository,
+<span class="fc" id="L35">                                 MovimientoStrategyFactory strategyFactory) {</span>
+<span class="fc" id="L36">        this.movimientoRepository = movimientoRepository;</span>
+<span class="fc" id="L37">        this.cuentaRepository = cuentaRepository;</span>
+<span class="fc" id="L38">        this.strategyFactory = strategyFactory;</span>
+<span class="fc" id="L39">    }</span>
+
+    @Override
+    public MovimientoDTO crear(MovimientoDTO dto) {
+<span class="fc" id="L43">        Cuenta cuenta = cuentaRepository.findById(dto.getNumeroCuenta())</span>
+<span class="pc" id="L44">                .orElseThrow(() -&gt; new RecursoNoEncontradoException(&quot;Cuenta no encontrada: &quot; + dto.getNumeroCuenta()));</span>
+
+<span class="fc" id="L46">        BigDecimal valor = dto.getValor();</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        LocalDate fecha = dto.getFecha() != null ? dto.getFecha() : LocalDate.now();</span>
+
+<span class="fc" id="L49">        MovimientoStrategy strategy = strategyFactory.resolver(valor);</span>
+<span class="fc" id="L50">        BigDecimal saldoActual = obtenerSaldoActual(cuenta);</span>
+
+        // Validar cupo diario para débitos
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        if (valor.signum() &lt; 0) {</span>
+<span class="fc" id="L54">            validarCupoDiario(cuenta, fecha, valor);</span>
+        }
+
+<span class="fc" id="L57">        BigDecimal nuevoSaldo = strategy.calcularNuevoSaldo(cuenta, saldoActual, valor);</span>
+
+<span class="fc" id="L59">        Movimiento mov = new Movimiento();</span>
+<span class="fc" id="L60">        mov.setCuenta(cuenta);</span>
+<span class="fc" id="L61">        mov.setFecha(fecha);</span>
+<span class="fc" id="L62">        mov.setValor(valor);</span>
+<span class="fc" id="L63">        mov.setSaldo(nuevoSaldo);</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        mov.setTipoMovimiento(valor.signum() &gt; 0 ? TipoMovimiento.CREDITO : TipoMovimiento.DEBITO);</span>
+
+<span class="fc" id="L66">        return toDto(movimientoRepository.save(mov));</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MovimientoDTO obtener(Long id) {
+<span class="fc" id="L72">        return toDto(buscar(id));</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;MovimientoDTO&gt; listar() {
+<span class="fc" id="L78">        return movimientoRepository.findAll().stream().map(this::toDto).toList();</span>
+    }
+
+    @Override
+    public MovimientoDTO actualizar(Long id, MovimientoDTO dto) {
+<span class="fc" id="L83">        Movimiento mov = buscar(id);</span>
+<span class="fc" id="L84">        Cuenta cuenta = mov.getCuenta();</span>
+
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">        BigDecimal valorNuevo = dto.getValor() != null ? dto.getValor() : mov.getValor();</span>
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">        LocalDate fechaNueva = dto.getFecha() != null ? dto.getFecha() : mov.getFecha();</span>
+
+        // Saldo de la cuenta justo antes de que se aplicara este movimiento
+<span class="fc" id="L90">        BigDecimal saldoAntes = mov.getSaldo().subtract(mov.getValor());</span>
+
+        // Validar cupo diario excluyendo el movimiento que se está editando
+<span class="fc bfc" id="L93" title="All 2 branches covered.">        if (valorNuevo.signum() &lt; 0) {</span>
+<span class="fc" id="L94">            validarCupoDiarioExcluyendo(cuenta, fechaNueva, valorNuevo, id);</span>
+        }
+
+        // Calcular y validar nuevo saldo
+<span class="fc" id="L98">        BigDecimal nuevoSaldo = saldoAntes.add(valorNuevo);</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        if (nuevoSaldo.signum() &lt; 0) {</span>
+<span class="fc" id="L100">            throw new SaldoNoDisponibleException();</span>
+        }
+
+<span class="fc" id="L103">        mov.setFecha(fechaNueva);</span>
+<span class="fc" id="L104">        mov.setValor(valorNuevo);</span>
+<span class="fc" id="L105">        mov.setSaldo(nuevoSaldo);</span>
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">        mov.setTipoMovimiento(valorNuevo.signum() &gt;= 0 ? TipoMovimiento.CREDITO : TipoMovimiento.DEBITO);</span>
+
+<span class="fc" id="L108">        return toDto(movimientoRepository.save(mov));</span>
+    }
+
+    @Override
+    public MovimientoDTO actualizarParcial(Long id, MovimientoDTO dto) {
+<span class="nc" id="L113">        return actualizar(id, dto);</span>
+    }
+
+    @Override
+    public void eliminar(Long id) {
+<span class="fc" id="L118">        Movimiento mov = buscar(id);</span>
+<span class="fc" id="L119">        movimientoRepository.delete(mov);</span>
+<span class="fc" id="L120">    }</span>
+
+    private Movimiento buscar(Long id) {
+<span class="fc" id="L123">        return movimientoRepository.findById(id)</span>
+<span class="fc" id="L124">                .orElseThrow(() -&gt; new RecursoNoEncontradoException(&quot;Movimiento no encontrado: &quot; + id));</span>
+    }
+
+    /**
+     * Saldo actual = último saldo registrado del movimiento más reciente,
+     * o el saldo inicial de la cuenta si no hay movimientos.
+     */
+    private BigDecimal obtenerSaldoActual(Cuenta cuenta) {
+<span class="fc" id="L132">        return movimientoRepository</span>
+<span class="fc" id="L133">                .findByCuentaNumeroCuentaOrderByFechaDescMovimientoIdDesc(cuenta.getNumeroCuenta())</span>
+<span class="fc" id="L134">                .stream()</span>
+<span class="fc" id="L135">                .findFirst()</span>
+<span class="fc" id="L136">                .map(Movimiento::getSaldo)</span>
+<span class="fc" id="L137">                .orElse(cuenta.getSaldoInicial());</span>
+    }
+
+    private void validarCupoDiario(Cuenta cuenta, LocalDate fecha, BigDecimal valor) {
+<span class="fc" id="L141">        validarCupoDiarioExcluyendo(cuenta, fecha, valor, null);</span>
+<span class="fc" id="L142">    }</span>
+
+    private void validarCupoDiarioExcluyendo(Cuenta cuenta, LocalDate fecha, BigDecimal valor, Long excluirId) {
+<span class="fc" id="L145">        BigDecimal totalDebitosDia = movimientoRepository</span>
+<span class="fc" id="L146">                .findByCuentaNumeroCuentaAndFechaAndTipoMovimiento(</span>
+<span class="fc" id="L147">                        cuenta.getNumeroCuenta(), fecha, TipoMovimiento.DEBITO)</span>
+<span class="fc" id="L148">                .stream()</span>
+<span class="pc bpc" id="L149" title="3 of 4 branches missed.">                .filter(m -&gt; excluirId == null || !m.getMovimientoId().equals(excluirId))</span>
+<span class="fc" id="L150">                .map(Movimiento::getValor)</span>
+<span class="fc" id="L151">                .map(BigDecimal::abs)</span>
+<span class="fc" id="L152">                .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+
+<span class="fc" id="L154">        BigDecimal proyectado = totalDebitosDia.add(valor.abs());</span>
+<span class="fc bfc" id="L155" title="All 2 branches covered.">        if (proyectado.compareTo(LIMITE_DIARIO_RETIRO) &gt; 0) {</span>
+<span class="fc" id="L156">            throw new CupoDiarioExcedidoException();</span>
+        }
+<span class="fc" id="L158">    }</span>
+
+    private MovimientoDTO toDto(Movimiento m) {
+<span class="fc" id="L161">        return MovimientoDTO.builder()</span>
+<span class="fc" id="L162">                .movimientoId(m.getMovimientoId())</span>
+<span class="fc" id="L163">                .fecha(m.getFecha())</span>
+<span class="fc" id="L164">                .numeroCuenta(m.getCuenta().getNumeroCuenta())</span>
+<span class="fc" id="L165">                .valor(m.getValor())</span>
+<span class="fc" id="L166">                .saldo(m.getSaldo())</span>
+<span class="fc" id="L167">                .tipoMovimiento(m.getTipoMovimiento().name())</span>
+<span class="fc" id="L168">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

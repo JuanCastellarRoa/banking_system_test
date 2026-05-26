@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Cuenta.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">banking-system</a> &gt; <a href="index.source.html" class="el_package">com.banco.bankingsystem.domain</a> &gt; <span class="el_source">Cuenta.java</span></div><h1>Cuenta.java</h1><pre class="source lang-java linenums">package com.banco.bankingsystem.domain;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.math.BigDecimal;
+
+@Entity
+@Table(name = &quot;cuenta&quot;)
+@Getter
+<span class="fc" id="L14">@Setter</span>
+<span class="fc" id="L15">@NoArgsConstructor</span>
+public class Cuenta {
+
+    @Id
+    @Column(name = &quot;numero_cuenta&quot;)
+<span class="fc" id="L20">    private Long numeroCuenta;</span>
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = &quot;tipo_cuenta&quot;, nullable = false, length = 20)
+<span class="fc" id="L25">    private TipoCuenta tipoCuenta;</span>
+
+    @NotNull
+    @Column(name = &quot;saldo_inicial&quot;, nullable = false, precision = 19, scale = 2)
+<span class="fc" id="L29">    private BigDecimal saldoInicial;</span>
+
+    @NotNull
+    @Column(nullable = false)
+<span class="fc" id="L33">    private Boolean estado;</span>
+
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = &quot;cliente_id_fk&quot;, referencedColumnName = &quot;persona_id&quot;, nullable = false)
+<span class="fc" id="L38">    private Cliente cliente;</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

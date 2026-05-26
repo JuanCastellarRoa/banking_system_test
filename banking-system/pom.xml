@@ -87,6 +87,33 @@
                     </excludes>
                 </configuration>
             </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>0.8.10</version>
+                    <configuration>
+                        <excludes>
+                            <!-- Excluir clases generadas por Lombok (builders, etc.) -->
+                            <exclude>com/banco/bankingsystem/dto/**</exclude>
+                            <exclude>com/banco/bankingsystem/domain/Persona.class</exclude>
+                            <exclude>com/banco/bankingsystem/BankingSystemApplication.class</exclude>
+                        </excludes>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>report</id>
+                            <phase>test</phase>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
         </plugins>
     </build>
 </project>

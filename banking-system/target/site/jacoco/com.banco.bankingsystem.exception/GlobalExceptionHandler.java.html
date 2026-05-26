@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GlobalExceptionHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">banking-system</a> &gt; <a href="index.source.html" class="el_package">com.banco.bankingsystem.exception</a> &gt; <span class="el_source">GlobalExceptionHandler.java</span></div><h1>GlobalExceptionHandler.java</h1><pre class="source lang-java linenums">package com.banco.bankingsystem.exception;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@RestControllerAdvice
+<span class="fc" id="L17">public class GlobalExceptionHandler {</span>
+
+<span class="nc bnc" id="L19" title="All 40 branches missed.">    @Data</span>
+<span class="fc" id="L20">    @AllArgsConstructor</span>
+    public static class ErrorResponse {
+<span class="fc" id="L22">        private LocalDateTime timestamp;</span>
+<span class="fc" id="L23">        private int status;</span>
+<span class="fc" id="L24">        private String error;</span>
+<span class="fc" id="L25">        private String mensaje;</span>
+<span class="fc" id="L26">        private List&lt;String&gt; detalles;</span>
+    }
+
+    @ExceptionHandler(SaldoNoDisponibleException.class)
+    public ResponseEntity&lt;ErrorResponse&gt; handleSaldo(SaldoNoDisponibleException ex) {
+<span class="fc" id="L31">        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), null);</span>
+    }
+
+    @ExceptionHandler(CupoDiarioExcedidoException.class)
+    public ResponseEntity&lt;ErrorResponse&gt; handleCupo(CupoDiarioExcedidoException ex) {
+<span class="fc" id="L36">        return build(HttpStatus.BAD_REQUEST, ex.getMessage(), null);</span>
+    }
+
+    @ExceptionHandler(RecursoNoEncontradoException.class)
+    public ResponseEntity&lt;ErrorResponse&gt; handleNotFound(RecursoNoEncontradoException ex) {
+<span class="fc" id="L41">        return build(HttpStatus.NOT_FOUND, ex.getMessage(), null);</span>
+    }
+
+    @ExceptionHandler(ReglaNegocioException.class)
+    public ResponseEntity&lt;ErrorResponse&gt; handleRegla(ReglaNegocioException ex) {
+<span class="fc" id="L46">        return build(HttpStatus.CONFLICT, ex.getMessage(), null);</span>
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity&lt;ErrorResponse&gt; handleValidation(MethodArgumentNotValidException ex) {
+<span class="fc" id="L51">        List&lt;String&gt; detalles = ex.getBindingResult().getFieldErrors().stream()</span>
+<span class="fc" id="L52">                .map(this::formatFieldError)</span>
+<span class="fc" id="L53">                .collect(Collectors.toList());</span>
+<span class="fc" id="L54">        return build(HttpStatus.BAD_REQUEST, &quot;Error de validación&quot;, detalles);</span>
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity&lt;ErrorResponse&gt; handleGeneric(Exception ex) {
+<span class="fc" id="L59">        return build(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), null);</span>
+    }
+
+    private String formatFieldError(FieldError fe) {
+<span class="fc" id="L63">        return fe.getField() + &quot;: &quot; + fe.getDefaultMessage();</span>
+    }
+
+    private ResponseEntity&lt;ErrorResponse&gt; build(HttpStatus status, String mensaje, List&lt;String&gt; detalles) {
+<span class="fc" id="L67">        ErrorResponse body = new ErrorResponse(</span>
+<span class="fc" id="L68">                LocalDateTime.now(),</span>
+<span class="fc" id="L69">                status.value(),</span>
+<span class="fc" id="L70">                status.getReasonPhrase(),</span>
+                mensaje,
+                detalles
+        );
+<span class="fc" id="L74">        return ResponseEntity.status(status).body(body);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

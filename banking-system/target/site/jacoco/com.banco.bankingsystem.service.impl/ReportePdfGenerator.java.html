@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReportePdfGenerator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">banking-system</a> &gt; <a href="index.source.html" class="el_package">com.banco.bankingsystem.service.impl</a> &gt; <span class="el_source">ReportePdfGenerator.java</span></div><h1>ReportePdfGenerator.java</h1><pre class="source lang-java linenums">package com.banco.bankingsystem.service.impl;
+
+import com.banco.bankingsystem.dto.ReporteLineaDTO;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Cell;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
+import org.springframework.stereotype.Component;
+
+import java.io.ByteArrayOutputStream;
+import java.time.LocalDate;
+import java.util.Base64;
+import java.util.List;
+
+@Component
+<span class="fc" id="L20">public class ReportePdfGenerator {</span>
+
+    public String generarBase64(String clienteId, LocalDate inicio, LocalDate fin, List&lt;ReporteLineaDTO&gt; lineas) {
+<span class="fc" id="L23">        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {</span>
+<span class="fc" id="L24">            PdfWriter writer = new PdfWriter(baos);</span>
+<span class="fc" id="L25">            PdfDocument pdfDoc = new PdfDocument(writer);</span>
+<span class="fc" id="L26">            try (Document doc = new Document(pdfDoc)) {</span>
+<span class="fc" id="L27">                doc.add(new Paragraph(&quot;Estado de Cuenta&quot;)</span>
+<span class="fc" id="L28">                        .setBold().setFontSize(16).setTextAlignment(TextAlignment.CENTER));</span>
+<span class="fc" id="L29">                doc.add(new Paragraph(String.format(</span>
+                        &quot;Cliente: %s    Periodo: %s a %s&quot;, clienteId, inicio, fin)));
+
+<span class="fc" id="L32">                float[] cols = {70, 100, 80, 60, 70, 50, 80, 80};</span>
+<span class="fc" id="L33">                Table table = new Table(UnitValue.createPointArray(cols));</span>
+<span class="fc" id="L34">                String[] headers = {&quot;Fecha&quot;, &quot;Cliente&quot;, &quot;NumCuenta&quot;, &quot;Tipo&quot;,</span>
+                        &quot;SaldoInicial&quot;, &quot;Estado&quot;, &quot;Movimiento&quot;, &quot;SaldoDisp.&quot;};
+<span class="fc bfc" id="L36" title="All 2 branches covered.">                for (String h : headers) {</span>
+<span class="fc" id="L37">                    table.addHeaderCell(new Cell().add(new Paragraph(h).setBold()));</span>
+                }
+<span class="fc bfc" id="L39" title="All 2 branches covered.">                for (ReporteLineaDTO l : lineas) {</span>
+<span class="fc" id="L40">                    table.addCell(String.valueOf(l.getFecha()));</span>
+<span class="fc" id="L41">                    table.addCell(l.getCliente());</span>
+<span class="fc" id="L42">                    table.addCell(String.valueOf(l.getNumeroCuenta()));</span>
+<span class="fc" id="L43">                    table.addCell(l.getTipo());</span>
+<span class="fc" id="L44">                    table.addCell(String.valueOf(l.getSaldoInicial()));</span>
+<span class="fc" id="L45">                    table.addCell(String.valueOf(l.getEstado()));</span>
+<span class="fc" id="L46">                    table.addCell(String.valueOf(l.getMovimiento()));</span>
+<span class="fc" id="L47">                    table.addCell(String.valueOf(l.getSaldoDisponible()));</span>
+<span class="fc" id="L48">                }</span>
+<span class="fc" id="L49">                doc.add(table);</span>
+            }
+<span class="fc" id="L51">            return Base64.getEncoder().encodeToString(baos.toByteArray());</span>
+<span class="nc" id="L52">        } catch (Exception e) {</span>
+<span class="nc" id="L53">            throw new IllegalStateException(&quot;Error generando PDF: &quot; + e.getMessage(), e);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -1,34 +1,24 @@
-import { TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { MovimientoService } from './movimiento.service';
 import { Movimiento } from '../../shared/models/movimiento.model';
 import { environment } from '../../../environments/environment';
+import { of } from 'rxjs';
 
 describe('MovimientoService', () => {
   let service: MovimientoService;
-  let httpMock: HttpTestingController;
+  let httpSpy: any;
 
   const mockMovimiento: Movimiento = {
-    id: 1,
+    movimientoId: 1,
     fecha: '2022-10-02',
     tipoMovimiento: 'CREDITO',
     valor: 600,
     saldo: 700,
-    cuentaId: 2,
-    numeroCuenta: '225487',
+    numeroCuenta: 225487,
   };
 
   beforeEach(() => {
-    TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [MovimientoService],
-    });
-    service = TestBed.inject(MovimientoService);
-    httpMock = TestBed.inject(HttpTestingController);
-  });
-
-  afterEach(() => {
-    httpMock.verify();
+    httpSpy = { get: jest.fn(), post: jest.fn(), delete: jest.fn() };
+    service = new MovimientoService(httpSpy as any);
   });
 
   it('should be created', () => {
@@ -36,61 +26,84 @@ describe('MovimientoService', () => {
   });
 
   it('getAll() should return movimientos via GET', () => {
+    httpSpy.get.mockReturnValue(of([mockMovimiento]));
+
     service.getAll().subscribe(movimientos => {
       expect(movimientos.length).toBe(1);
       expect(movimientos[0].tipoMovimiento).toBe('CREDITO');
     });
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/movimientos`);
-    expect(req.request.method).toBe('GET');
-    req.flush([mockMovimiento]);
+    expect(httpSpy.get).toHaveBeenCalledWith(`${environment.apiUrl}/movimientos`);
   });
 
   it('create() should POST a new movimiento — crédito increments saldo', () => {
-    const newMov: Movimiento = { tipoMovimiento: 'CREDITO', valor: 600, cuentaId: 2 };
+    const newMov: Movimiento = { tipoMovimiento: 'CREDITO', valor: 600, numeroCuenta: 225487 } as any;
+    httpSpy.post.mockReturnValue(of(mockMovimiento));
 
     service.create(newMov).subscribe(created => {
       expect(created.saldo).toBe(700);
       expect(created.tipoMovimiento).toBe('CREDITO');
     });
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/movimientos`);
-    expect(req.request.method).toBe('POST');
-    req.flush(mockMovimiento);
+    expect(httpSpy.post).toHaveBeenCalledWith(`${environment.apiUrl}/movimientos`, newMov);
   });
 
   it('create() DEBITO — backend should return positive valor (stored as negative)', () => {
-    const debitoMov: Movimiento = { tipoMovimiento: 'DEBITO', valor: 540, cuentaId: 4 };
-    const serverResponse: Movimiento = { ...debitoMov, id: 2, saldo: 0, valor: -540 };
+    const debitoMov: Movimiento = { tipoMovimiento: 'DEBITO', valor: 540, numeroCuenta: 496825 } as any;
+    const serverResponse: Movimiento = { ...debitoMov, movimientoId: 2, saldo: 0, valor: -540 } as any;
+    httpSpy.post.mockReturnValue(of(serverResponse));
 
     service.create(debitoMov).subscribe(created => {
       expect(created.valor).toBe(-540);
       expect(created.saldo).toBe(0);
     });
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/movimientos`);
-    expect(req.request.method).toBe('POST');
-    req.flush(serverResponse);
+    expect(httpSpy.post).toHaveBeenCalledWith(`${environment.apiUrl}/movimientos`, debitoMov);
   });
 
   it('delete() should send DELETE to the correct URL', () => {
+    httpSpy.delete.mockReturnValue(of(void 0));
+
     service.delete(1).subscribe(result => {
       expect(result).toBeUndefined();
     });
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/movimientos/1`);
-    expect(req.request.method).toBe('DELETE');
-    req.flush(null);
+    expect(httpSpy.delete).toHaveBeenCalledWith(`${environment.apiUrl}/movimientos/1`);
   });
 
   it('getById() should return a single movimiento', () => {
+    httpSpy.get.mockReturnValue(of(mockMovimiento));
+
     service.getById(1).subscribe(m => {
-      expect(m.id).toBe(1);
-      expect(m.numeroCuenta).toBe('225487');
+      expect(m.movimientoId).toBe(1);
+      expect(m.numeroCuenta).toBe(225487);
     });
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/movimientos/1`);
-    expect(req.request.method).toBe('GET');
-    req.flush(mockMovimiento);
+    expect(httpSpy.get).toHaveBeenCalledWith(`${environment.apiUrl}/movimientos/1`);
+  });
+
+  it('update() should PUT the movimiento to the correct URL', () => {
+    httpSpy = { ...httpSpy, put: jest.fn() };
+    service = new MovimientoService(httpSpy as any);
+    httpSpy.put.mockReturnValue(of(mockMovimiento));
+
+    service.update(1, mockMovimiento).subscribe(updated => {
+      expect(updated.movimientoId).toBe(1);
+    });
+
+    expect(httpSpy.put).toHaveBeenCalledWith(`${environment.apiUrl}/movimientos/1`, mockMovimiento);
+  });
+
+  it('patch() should PATCH a movimiento', () => {
+    httpSpy = { ...httpSpy, patch: jest.fn() };
+    service = new MovimientoService(httpSpy as any);
+    const partial = { valor: 100 };
+    httpSpy.patch.mockReturnValue(of({ ...mockMovimiento, valor: 100 }));
+
+    service.patch(1, partial).subscribe(updated => {
+      expect(updated.valor).toBe(100);
+    });
+
+    expect(httpSpy.patch).toHaveBeenCalledWith(`${environment.apiUrl}/movimientos/1`, partial);
   });
 });

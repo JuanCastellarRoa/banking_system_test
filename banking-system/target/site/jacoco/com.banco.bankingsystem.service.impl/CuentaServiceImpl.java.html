@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CuentaServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">banking-system</a> &gt; <a href="index.source.html" class="el_package">com.banco.bankingsystem.service.impl</a> &gt; <span class="el_source">CuentaServiceImpl.java</span></div><h1>CuentaServiceImpl.java</h1><pre class="source lang-java linenums">package com.banco.bankingsystem.service.impl;
+
+import com.banco.bankingsystem.domain.Cliente;
+import com.banco.bankingsystem.domain.Cuenta;
+import com.banco.bankingsystem.dto.CuentaDTO;
+import com.banco.bankingsystem.exception.RecursoNoEncontradoException;
+import com.banco.bankingsystem.exception.ReglaNegocioException;
+import com.banco.bankingsystem.domain.Movimiento;
+import com.banco.bankingsystem.repository.ClienteRepository;
+import com.banco.bankingsystem.repository.CuentaRepository;
+import com.banco.bankingsystem.repository.MovimientoRepository;
+import com.banco.bankingsystem.service.CuentaService;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ThreadLocalRandom;
+
+@Service
+@Transactional
+public class CuentaServiceImpl implements CuentaService {
+
+    private final CuentaRepository cuentaRepository;
+    private final ClienteRepository clienteRepository;
+    private final MovimientoRepository movimientoRepository;
+
+    public CuentaServiceImpl(CuentaRepository cuentaRepository,
+                              ClienteRepository clienteRepository,
+<span class="fc" id="L31">                              MovimientoRepository movimientoRepository) {</span>
+<span class="fc" id="L32">        this.cuentaRepository = cuentaRepository;</span>
+<span class="fc" id="L33">        this.clienteRepository = clienteRepository;</span>
+<span class="fc" id="L34">        this.movimientoRepository = movimientoRepository;</span>
+<span class="fc" id="L35">    }</span>
+
+    @Override
+    public CuentaDTO crear(CuentaDTO dto) {
+        // Auto-generación comentada: el número de cuenta lo ingresa el usuario
+        // long numero;
+        // do {
+        //     numero = ThreadLocalRandom.current().nextLong(1_000_000_000L, 10_000_000_000L);
+        // } while (cuentaRepository.existsById(numero));
+        // dto.setNumeroCuenta(numero);
+
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        if (cuentaRepository.existsById(dto.getNumeroCuenta())) {</span>
+<span class="fc" id="L47">            throw new ReglaNegocioException(&quot;Ya existe una cuenta con el número: &quot; + dto.getNumeroCuenta());</span>
+        }
+
+<span class="fc" id="L50">        Cliente cliente = clienteRepository.findByClienteId(dto.getClienteId())</span>
+<span class="fc" id="L51">                .orElseThrow(() -&gt; new RecursoNoEncontradoException(&quot;Cliente no encontrado: &quot; + dto.getClienteId()));</span>
+
+<span class="fc" id="L53">        Cuenta cuenta = new Cuenta();</span>
+<span class="fc" id="L54">        cuenta.setNumeroCuenta(dto.getNumeroCuenta());</span>
+<span class="fc" id="L55">        cuenta.setTipoCuenta(dto.getTipoCuenta());</span>
+<span class="fc" id="L56">        cuenta.setSaldoInicial(dto.getSaldoInicial());</span>
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">        cuenta.setEstado(dto.getEstado() == null ? Boolean.TRUE : dto.getEstado());</span>
+<span class="fc" id="L58">        cuenta.setCliente(cliente);</span>
+<span class="fc" id="L59">        return toDto(cuentaRepository.save(cuenta));</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CuentaDTO obtener(Long numeroCuenta) {
+<span class="fc" id="L65">        return toDto(buscar(numeroCuenta));</span>
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List&lt;CuentaDTO&gt; listar() {
+<span class="fc" id="L71">        return cuentaRepository.findAll().stream().map(this::toDto).toList();</span>
+    }
+
+    @Override
+    public CuentaDTO actualizar(Long numeroCuenta, CuentaDTO dto) {
+<span class="fc" id="L76">        Cuenta cuenta = buscar(numeroCuenta);</span>
+<span class="fc" id="L77">        cuenta.setTipoCuenta(dto.getTipoCuenta());</span>
+<span class="fc" id="L78">        cuenta.setSaldoInicial(dto.getSaldoInicial());</span>
+<span class="fc" id="L79">        cuenta.setEstado(dto.getEstado());</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        if (dto.getClienteId() != null) {</span>
+<span class="fc" id="L81">            Cliente cliente = clienteRepository.findByClienteId(dto.getClienteId())</span>
+<span class="pc" id="L82">                    .orElseThrow(() -&gt; new RecursoNoEncontradoException(&quot;Cliente no encontrado: &quot; + dto.getClienteId()));</span>
+<span class="fc" id="L83">            cuenta.setCliente(cliente);</span>
+        }
+<span class="fc" id="L85">        return toDto(cuentaRepository.save(cuenta));</span>
+    }
+
+    @Override
+    public CuentaDTO actualizarParcial(Long numeroCuenta, CuentaDTO dto) {
+<span class="fc" id="L90">        Cuenta cuenta = buscar(numeroCuenta);</span>
+<span class="fc" id="L91">        Optional.ofNullable(dto.getTipoCuenta()).ifPresent(cuenta::setTipoCuenta);</span>
+<span class="fc" id="L92">        Optional.ofNullable(dto.getSaldoInicial()).ifPresent(cuenta::setSaldoInicial);</span>
+<span class="fc" id="L93">        Optional.ofNullable(dto.getEstado()).ifPresent(cuenta::setEstado);</span>
+<span class="fc" id="L94">        Optional.ofNullable(dto.getClienteId()).ifPresent(cid -&gt; {</span>
+<span class="fc" id="L95">            Cliente cliente = clienteRepository.findByClienteId(cid)</span>
+<span class="pc" id="L96">                    .orElseThrow(() -&gt; new RecursoNoEncontradoException(&quot;Cliente no encontrado: &quot; + cid));</span>
+<span class="nc" id="L97">            cuenta.setCliente(cliente);</span>
+<span class="nc" id="L98">        });</span>
+<span class="fc" id="L99">        return toDto(cuentaRepository.save(cuenta));</span>
+    }
+
+    @Override
+    public void eliminar(Long numeroCuenta) {
+<span class="fc" id="L104">        Cuenta cuenta = buscar(numeroCuenta);</span>
+<span class="fc" id="L105">        BigDecimal saldoActual = movimientoRepository</span>
+<span class="fc" id="L106">                .findFirstByCuentaNumeroCuentaOrderByFechaDescMovimientoIdDesc(numeroCuenta)</span>
+<span class="fc" id="L107">                .map(Movimiento::getSaldo)</span>
+<span class="fc" id="L108">                .orElse(cuenta.getSaldoInicial());</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        if (saldoActual.compareTo(BigDecimal.ZERO) != 0) {</span>
+<span class="fc" id="L110">            throw new ReglaNegocioException(</span>
+                &quot;No se puede eliminar la cuenta: el saldo debe ser 0 (saldo actual: &quot; + saldoActual + &quot;).&quot;);
+        }
+<span class="fc" id="L113">        cuentaRepository.delete(cuenta);</span>
+<span class="fc" id="L114">    }</span>
+
+    private Cuenta buscar(Long numeroCuenta) {
+<span class="fc" id="L117">        return cuentaRepository.findById(numeroCuenta)</span>
+<span class="fc" id="L118">                .orElseThrow(() -&gt; new RecursoNoEncontradoException(&quot;Cuenta no encontrada: &quot; + numeroCuenta));</span>
+    }
+
+    private CuentaDTO toDto(Cuenta c) {
+<span class="fc" id="L122">        BigDecimal saldo = movimientoRepository</span>
+<span class="fc" id="L123">                .findFirstByCuentaNumeroCuentaOrderByFechaDescMovimientoIdDesc(c.getNumeroCuenta())</span>
+<span class="fc" id="L124">                .map(Movimiento::getSaldo)</span>
+<span class="fc" id="L125">                .orElse(c.getSaldoInicial());</span>
+<span class="fc" id="L126">        return CuentaDTO.builder()</span>
+<span class="fc" id="L127">                .numeroCuenta(c.getNumeroCuenta())</span>
+<span class="fc" id="L128">                .tipoCuenta(c.getTipoCuenta())</span>
+<span class="fc" id="L129">                .saldoInicial(c.getSaldoInicial())</span>
+<span class="fc" id="L130">                .saldo(saldo)</span>
+<span class="fc" id="L131">                .estado(c.getEstado())</span>
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">                .clienteId(c.getCliente() != null ? c.getCliente().getClienteId() : null)</span>
+<span class="fc" id="L133">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

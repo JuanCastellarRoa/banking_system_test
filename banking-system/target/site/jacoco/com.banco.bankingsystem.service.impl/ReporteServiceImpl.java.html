@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReporteServiceImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">banking-system</a> &gt; <a href="index.source.html" class="el_package">com.banco.bankingsystem.service.impl</a> &gt; <span class="el_source">ReporteServiceImpl.java</span></div><h1>ReporteServiceImpl.java</h1><pre class="source lang-java linenums">package com.banco.bankingsystem.service.impl;
+
+import com.banco.bankingsystem.domain.Cliente;
+import com.banco.bankingsystem.domain.Movimiento;
+import com.banco.bankingsystem.dto.ReporteLineaDTO;
+import com.banco.bankingsystem.dto.ReporteResponseDTO;
+import com.banco.bankingsystem.exception.RecursoNoEncontradoException;
+import com.banco.bankingsystem.repository.ClienteRepository;
+import com.banco.bankingsystem.repository.MovimientoRepository;
+import com.banco.bankingsystem.service.ReporteService;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.List;
+
+@Service
+@Transactional(readOnly = true)
+public class ReporteServiceImpl implements ReporteService {
+
+    private final ClienteRepository clienteRepository;
+    private final MovimientoRepository movimientoRepository;
+    private final ReportePdfGenerator pdfGenerator;
+
+    public ReporteServiceImpl(ClienteRepository clienteRepository,
+                              MovimientoRepository movimientoRepository,
+<span class="fc" id="L28">                              ReportePdfGenerator pdfGenerator) {</span>
+<span class="fc" id="L29">        this.clienteRepository = clienteRepository;</span>
+<span class="fc" id="L30">        this.movimientoRepository = movimientoRepository;</span>
+<span class="fc" id="L31">        this.pdfGenerator = pdfGenerator;</span>
+<span class="fc" id="L32">    }</span>
+
+    @Override
+    public ReporteResponseDTO generar(String clienteId, LocalDate inicio, LocalDate fin) {
+<span class="fc" id="L36">        Cliente cliente = clienteRepository.findByClienteId(clienteId)</span>
+<span class="fc" id="L37">                .orElseThrow(() -&gt; new RecursoNoEncontradoException(&quot;Cliente no encontrado: &quot; + clienteId));</span>
+
+<span class="fc" id="L39">        List&lt;Movimiento&gt; movs = movimientoRepository</span>
+<span class="fc" id="L40">                .findByCuentaClienteClienteIdAndFechaBetweenOrderByFechaAscMovimientoIdAsc(</span>
+                        clienteId, inicio, fin);
+
+<span class="fc" id="L43">        List&lt;ReporteLineaDTO&gt; lineas = movs.stream()</span>
+<span class="fc" id="L44">                .map(m -&gt; ReporteLineaDTO.builder()</span>
+<span class="fc" id="L45">                        .fecha(m.getFecha())</span>
+<span class="fc" id="L46">                        .cliente(cliente.getNombre())</span>
+<span class="fc" id="L47">                        .numeroCuenta(m.getCuenta().getNumeroCuenta())</span>
+<span class="fc" id="L48">                        .tipo(m.getCuenta().getTipoCuenta().name())</span>
+<span class="fc" id="L49">                        .saldoInicial(m.getCuenta().getSaldoInicial())</span>
+<span class="fc" id="L50">                        .estado(m.getCuenta().getEstado())</span>
+<span class="fc" id="L51">                        .movimiento(m.getValor())</span>
+<span class="fc" id="L52">                        .saldoDisponible(m.getSaldo())</span>
+<span class="fc" id="L53">                        .build())</span>
+<span class="fc" id="L54">                .toList();</span>
+
+<span class="fc" id="L56">        String pdfBase64 = pdfGenerator.generarBase64(cliente.getNombre(), inicio, fin, lineas);</span>
+
+<span class="fc" id="L58">        BigDecimal totalDebitos = movs.stream()</span>
+<span class="fc" id="L59">                .map(Movimiento::getValor)</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">                .filter(v -&gt; v.signum() &lt; 0)</span>
+<span class="fc" id="L61">                .map(BigDecimal::abs)</span>
+<span class="fc" id="L62">                .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+
+<span class="fc" id="L64">        BigDecimal totalCreditos = movs.stream()</span>
+<span class="fc" id="L65">                .map(Movimiento::getValor)</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">                .filter(v -&gt; v.signum() &gt; 0)</span>
+<span class="fc" id="L67">                .reduce(BigDecimal.ZERO, BigDecimal::add);</span>
+
+<span class="fc" id="L69">        return ReporteResponseDTO.builder()</span>
+<span class="fc" id="L70">                .clienteId(clienteId)</span>
+<span class="fc" id="L71">                .fechaInicio(inicio)</span>
+<span class="fc" id="L72">                .fechaFin(fin)</span>
+<span class="fc" id="L73">                .movimientos(lineas)</span>
+<span class="fc" id="L74">                .totalDebitos(totalDebitos)</span>
+<span class="fc" id="L75">                .totalCreditos(totalCreditos)</span>
+<span class="fc" id="L76">                .pdfBase64(pdfBase64)</span>
+<span class="fc" id="L77">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

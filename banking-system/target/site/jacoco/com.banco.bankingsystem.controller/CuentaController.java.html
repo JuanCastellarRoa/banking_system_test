@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="es"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CuentaController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">banking-system</a> &gt; <a href="index.source.html" class="el_package">com.banco.bankingsystem.controller</a> &gt; <span class="el_source">CuentaController.java</span></div><h1>CuentaController.java</h1><pre class="source lang-java linenums">package com.banco.bankingsystem.controller;
+
+import com.banco.bankingsystem.dto.CuentaDTO;
+import com.banco.bankingsystem.service.CuentaService;
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;/cuentas&quot;)
+public class CuentaController {
+
+    private final CuentaService cuentaService;
+
+<span class="fc" id="L18">    public CuentaController(CuentaService cuentaService) {</span>
+<span class="fc" id="L19">        this.cuentaService = cuentaService;</span>
+<span class="fc" id="L20">    }</span>
+
+    @PostMapping
+    public ResponseEntity&lt;CuentaDTO&gt; crear(@Valid @RequestBody CuentaDTO dto) {
+<span class="fc" id="L24">        CuentaDTO creada = cuentaService.crear(dto);</span>
+<span class="fc" id="L25">        return ResponseEntity.created(URI.create(&quot;/cuentas/&quot; + creada.getNumeroCuenta())).body(creada);</span>
+    }
+
+    @GetMapping
+    public List&lt;CuentaDTO&gt; listar() {
+<span class="fc" id="L30">        return cuentaService.listar();</span>
+    }
+
+    @GetMapping(&quot;/{numeroCuenta}&quot;)
+    public CuentaDTO obtener(@PathVariable Long numeroCuenta) {
+<span class="fc" id="L35">        return cuentaService.obtener(numeroCuenta);</span>
+    }
+
+    @PutMapping(&quot;/{numeroCuenta}&quot;)
+    public CuentaDTO actualizar(@PathVariable Long numeroCuenta, @Valid @RequestBody CuentaDTO dto) {
+<span class="fc" id="L40">        return cuentaService.actualizar(numeroCuenta, dto);</span>
+    }
+
+    @PatchMapping(&quot;/{numeroCuenta}&quot;)
+    public CuentaDTO actualizarParcial(@PathVariable Long numeroCuenta, @RequestBody CuentaDTO dto) {
+<span class="fc" id="L45">        return cuentaService.actualizarParcial(numeroCuenta, dto);</span>
+    }
+
+    @DeleteMapping(&quot;/{numeroCuenta}&quot;)
+    public ResponseEntity&lt;Void&gt; eliminar(@PathVariable Long numeroCuenta) {
+<span class="fc" id="L50">        cuentaService.eliminar(numeroCuenta);</span>
+<span class="fc" id="L51">        return ResponseEntity.noContent().build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
