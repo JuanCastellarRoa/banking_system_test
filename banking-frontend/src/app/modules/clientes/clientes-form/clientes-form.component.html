@@ -1,0 +1,146 @@
+<form class="form" [formGroup]="form" (ngSubmit)="onSubmit()">
+  <h3 class="form__title">{{ isEditing ? 'Editar Cliente' : 'Nuevo Cliente' }}</h3>
+
+  <div class="form__grid">
+
+    <!-- Nombre -->
+    <div class="form__group">
+      <label class="form__label">Nombre *</label>
+      <input
+        class="form__control"
+        [class.form__control--invalid]="f['nombre'].invalid && f['nombre'].touched"
+        formControlName="nombre"
+        type="text"
+        placeholder="Nombre completo"
+      />
+      <span class="form__error" *ngIf="f['nombre'].touched && f['nombre'].errors?.['required']">
+        El nombre es obligatorio.
+      </span>
+      <span class="form__error" *ngIf="f['nombre'].touched && f['nombre'].errors?.['minlength']">
+        Mínimo 3 caracteres.
+      </span>
+    </div>
+
+    <!-- Género -->
+    <div class="form__group">
+      <label class="form__label">Género *</label>
+      <select
+        class="form__control"
+        [class.form__control--invalid]="f['genero'].invalid && f['genero'].touched"
+        formControlName="genero"
+      >
+        <option value="">-- Seleccionar --</option>
+        <option value="M">Masculino</option>
+        <option value="F">Femenino</option>
+      </select>
+      <span class="form__error" *ngIf="f['genero'].touched && f['genero'].errors?.['required']">
+        El género es obligatorio.
+      </span>
+    </div>
+
+    <!-- Edad -->
+    <div class="form__group">
+      <label class="form__label">Edad *</label>
+      <input
+        class="form__control"
+        [class.form__control--invalid]="f['edad'].invalid && f['edad'].touched"
+        formControlName="edad"
+        type="number"
+        placeholder="Edad"
+      />
+      <span class="form__error" *ngIf="f['edad'].touched && f['edad'].errors?.['required']">
+        La edad es obligatoria.
+      </span>
+      <span class="form__error" *ngIf="f['edad'].touched && (f['edad'].errors?.['min'] || f['edad'].errors?.['max'])">
+        Edad debe ser entre 1 y 120.
+      </span>
+    </div>
+
+    <!-- Identificación -->
+    <div class="form__group">
+      <label class="form__label">Identificación *</label>
+      <input
+        class="form__control"
+        [class.form__control--invalid]="f['identificacion'].invalid && f['identificacion'].touched"
+        formControlName="identificacion"
+        type="text"
+        placeholder="Número de cédula / pasaporte"
+      />
+      <span class="form__error" *ngIf="f['identificacion'].touched && f['identificacion'].errors?.['required']">
+        La identificación es obligatoria.
+      </span>
+      <span class="form__error" *ngIf="f['identificacion'].touched && f['identificacion'].errors?.['minlength']">
+        Mínimo 6 caracteres.
+      </span>
+    </div>
+
+    <!-- Dirección (span full) -->
+    <div class="form__group form__group--span2">
+      <label class="form__label">Dirección *</label>
+      <input
+        class="form__control"
+        [class.form__control--invalid]="f['direccion'].invalid && f['direccion'].touched"
+        formControlName="direccion"
+        type="text"
+        placeholder="Dirección"
+      />
+      <span class="form__error" *ngIf="f['direccion'].touched && f['direccion'].errors?.['required']">
+        La dirección es obligatoria.
+      </span>
+    </div>
+
+    <!-- Teléfono -->
+    <div class="form__group">
+      <label class="form__label">Teléfono *</label>
+      <input
+        class="form__control"
+        [class.form__control--invalid]="f['telefono'].invalid && f['telefono'].touched"
+        formControlName="telefono"
+        type="text"
+        placeholder="Ej: 0991234567"
+      />
+      <span class="form__error" *ngIf="f['telefono'].touched && f['telefono'].errors?.['required']">
+        El teléfono es obligatorio.
+      </span>
+      <span class="form__error" *ngIf="f['telefono'].touched && f['telefono'].errors?.['pattern']">
+        Ingrese solo dígitos (7-15 caracteres).
+      </span>
+    </div>
+
+    <!-- Contraseña -->
+    <div class="form__group">
+      <label class="form__label">Contraseña {{ isEditing ? '' : '*' }}</label>
+      <input
+        class="form__control"
+        [class.form__control--invalid]="f['contrasena'].invalid && f['contrasena'].touched"
+        formControlName="contrasena"
+        type="password"
+        placeholder="{{ isEditing ? 'Dejar vacío para no cambiar' : 'Contraseña' }}"
+      />
+      <span class="form__error" *ngIf="f['contrasena'].touched && f['contrasena'].errors?.['required']">
+        La contraseña es obligatoria.
+      </span>
+      <span class="form__error" *ngIf="f['contrasena'].touched && f['contrasena'].errors?.['minlength']">
+        Mínimo 4 caracteres.
+      </span>
+    </div>
+
+    <!-- Estado -->
+    <div class="form__group">
+      <label class="form__label">Estado *</label>
+      <select class="form__control" formControlName="estado">
+        <option [ngValue]="true">Activo</option>
+        <option [ngValue]="false">Inactivo</option>
+      </select>
+    </div>
+
+  </div>
+
+  <!-- Actions -->
+  <div class="form__actions">
+    <button type="button" class="btn btn--secondary" (click)="onCancel()">Cancelar</button>
+    <button type="submit" class="btn btn--primary" [disabled]="submitting">
+      {{ submitting ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Crear') }}
+    </button>
+  </div>
+</form>

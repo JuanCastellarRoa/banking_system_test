@@ -1,0 +1,59 @@
+.shell {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── SIDEBAR ─────────────────────────────────────────── */
+.sidebar {
+  width: 180px;
+  min-width: 180px;
+  background-color: #0f172a;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+
+  &__brand {
+    padding: 24px 20px 20px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #06b6d4;
+    letter-spacing: 2px;
+    border-bottom: 1px solid #1e293b;
+  }
+
+  &__nav {
+    display: flex;
+    flex-direction: column;
+    padding-top: 8px;
+  }
+
+  &__nav-link {
+    display: block;
+    padding: 12px 20px;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    transition: background 0.15s, color 0.15s;
+
+    &:hover {
+      background-color: #1e293b;
+      color: #e2e8f0;
+    }
+
+    &--active {
+      background-color: #1e293b;
+      color: #f1f5f9;
+      border-left: 3px solid #06b6d4;
+      padding-left: 17px;
+    }
+  }
+}
+
+/* ── MAIN CONTENT ─────────────────────────────────────── */
+.main {
+  flex: 1;
+  overflow-y: auto;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+}

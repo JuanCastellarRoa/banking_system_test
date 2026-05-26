@@ -1,0 +1,66 @@
+<div class="page">
+  <div class="page__header">
+    <h2 class="page__title">Movimientos</h2>
+    <button class="btn btn--primary" (click)="openCreate()">Nuevo</button>
+  </div>
+
+  <div class="page__toolbar">
+    <input
+      class="search-input"
+      type="text"
+      placeholder="Buscar por número de cuenta o tipo..."
+      (input)="onSearch($event)"
+    />
+  </div>
+
+  <div class="table-wrapper">
+    <div class="loading" *ngIf="loading">Cargando...</div>
+
+    <table *ngIf="!loading">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Fecha</th>
+          <th>Tipo</th>
+          <th>Valor</th>
+          <th>Saldo Disponible</th>
+          <th>Número Cuenta</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let m of filtered">
+          <td>{{ m.movimientoId }}</td>
+          <td>{{ m.fecha }}</td>
+          <td>
+            <span class="badge" [class.badge--active]="m.tipoMovimiento === 'CREDITO'" [class.badge--inactive]="m.tipoMovimiento === 'DEBITO'">
+              {{ m.tipoMovimiento }}
+            </span>
+          </td>
+          <td [class.text-success]="m.valor > 0" [class.text-danger]="m.valor < 0">
+            {{ m.valor | number:'1.2-2' }}
+          </td>
+          <td>{{ m.saldo !== undefined ? (m.saldo | number:'1.2-2') : '—' }}</td>
+          <td>{{ m.numeroCuenta }}</td>
+          <td class="actions">
+            <button class="btn btn--sm btn--outline" (click)="openEdit(m)">Editar</button>
+            <button class="btn btn--sm btn--danger" (click)="delete(m)">Eliminar</button>
+          </td>
+        </tr>
+        <tr *ngIf="filtered.length === 0">
+          <td colspan="7" class="empty">No se encontraron movimientos.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showForm" (click)="closeForm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <app-movimientos-form
+        [movimiento]="selected"
+        (saved)="onSaved()"
+        (cancelled)="closeForm()"
+      ></app-movimientos-form>
+    </div>
+  </div>
+</div>

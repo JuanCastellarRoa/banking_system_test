@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: banco
+      POSTGRES_USER: banco_user
+      POSTGRES_PASSWORD: banco_pass
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U banco_user -d banco"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: ./banking-system
+      dockerfile: Dockerfile
+    image: banking-system:latest
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/banco
+      - SPRING_DATASOURCE_USERNAME=banco_user
+      - SPRING_DATASOURCE_PASSWORD=banco_pass
+      - DB_HOST=db
+      - DB_PORT=5432
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-s", "http://localhost:8080/clientes"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  frontend:
+    build:
+      context: ./banking-frontend
+      dockerfile: Dockerfile
+    image: banking-frontend:latest
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "4200:80"
+    restart: unless-stopped
+
+volumes:
+  db-data:

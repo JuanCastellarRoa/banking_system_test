@@ -1,0 +1,118 @@
+<div class="page">
+  <div class="page__header">
+    <h2 class="page__title">Reportes</h2>
+    <button
+      class="btn btn--outline"
+      [disabled]="!pdfBase64"
+      (click)="downloadPdf()"
+    >
+      Descargar PDF
+    </button>
+  </div>
+
+  <!-- Filter form -->
+  <form class="report-filter" [formGroup]="form" (ngSubmit)="onConsultar()">
+
+    <div class="report-filter__group">
+      <label class="form__label">Fecha Inicio *</label>
+      <input
+        class="form__control"
+        [class.form__control--invalid]="f['fechaInicio'].invalid && f['fechaInicio'].touched"
+        formControlName="fechaInicio"
+        type="date"
+      />
+      <span class="form__error" *ngIf="f['fechaInicio'].touched && f['fechaInicio'].errors?.['required']">
+        La fecha de inicio es obligatoria.
+      </span>
+    </div>
+
+    <div class="report-filter__group">
+      <label class="form__label">Fecha Fin *</label>
+      <input
+        class="form__control"
+        [class.form__control--invalid]="f['fechaFin'].invalid && f['fechaFin'].touched"
+        formControlName="fechaFin"
+        type="date"
+      />
+      <span class="form__error" *ngIf="f['fechaFin'].touched && f['fechaFin'].errors?.['required']">
+        La fecha de fin es obligatoria.
+      </span>
+    </div>
+
+    <div class="report-filter__group report-filter__group--wide">
+      <label class="form__label">Cliente *</label>
+      <select
+        class="form__control"
+        [class.form__control--invalid]="f['cliente'].invalid && f['cliente'].touched"
+        formControlName="cliente"
+      >
+        <option value="">-- Seleccionar cliente --</option>
+        <option *ngFor="let c of clientes" [ngValue]="c.clienteId">{{ c.nombre }}</option>
+      </select>
+      <span class="form__error" *ngIf="f['cliente'].touched && f['cliente'].errors?.['required']">
+        Debe seleccionar un cliente.
+      </span>
+    </div>
+
+    <div class="report-filter__action">
+      <button type="submit" class="btn btn--primary" [disabled]="loading">
+        {{ loading ? 'Consultando...' : 'Consultar' }}
+      </button>
+    </div>
+
+  </form>
+
+  <!-- Results -->
+  <div class="table-wrapper" *ngIf="searched">
+    <div class="loading" *ngIf="loading">Cargando reporte...</div>
+
+    <table *ngIf="!loading">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Cliente</th>
+          <th>Número Cuenta</th>
+          <th>Tipo</th>
+          <th>Saldo Inicial</th>
+          <th>Estado</th>
+          <th>Movimiento</th>
+          <th>Saldo Disponible</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let linea of reporteLineas">
+          <td>{{ linea.fecha }}</td>
+          <td>{{ linea.cliente }}</td>
+          <td>{{ linea.numeroCuenta }}</td>
+          <td>{{ linea.tipo }}</td>
+          <td>{{ linea.saldoInicial | number:'1.2-2' }}</td>
+          <td>
+            <span class="badge" [class.badge--active]="linea.estado" [class.badge--inactive]="!linea.estado">
+              {{ linea.estado ? 'Activa' : 'Inactiva' }}
+            </span>
+          </td>
+          <td [class.text-success]="linea.movimiento > 0" [class.text-danger]="linea.movimiento < 0">
+            {{ linea.movimiento | number:'1.2-2' }}
+          </td>
+          <td>{{ linea.saldoDisponible | number:'1.2-2' }}</td>
+        </tr>
+        <tr *ngIf="reporteLineas.length === 0">
+          <td colspan="8" class="empty">No hay movimientos en el rango de fechas seleccionado.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Totales del período -->
+    <div class="report-summary" *ngIf="!loading && reporteLineas.length > 0">
+      <div class="report-summary__item report-summary__item--credit">
+        <span class="report-summary__label">Total Créditos</span>
+        <span class="report-summary__value">{{ totalCreditos | number:'1.2-2' }}</span>
+      </div>
+      <div class="report-summary__item report-summary__item--debit">
+        <span class="report-summary__label">Total Débitos</span>
+        <span class="report-summary__value">{{ totalDebitos | number:'1.2-2' }}</span>
+      </div>
+    </div>
+
+  </div>
+</div>

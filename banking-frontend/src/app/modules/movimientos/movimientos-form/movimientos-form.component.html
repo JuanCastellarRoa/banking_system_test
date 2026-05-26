@@ -1,0 +1,68 @@
+<form class="form" [formGroup]="form" (ngSubmit)="onSubmit()">
+  <h3 class="form__title">{{ isEditing ? 'Editar Movimiento' : 'Nuevo Movimiento' }}</h3>
+
+  <div class="form__grid">
+
+    <!-- Tipo de movimiento -->
+    <div class="form__group">
+      <label class="form__label">Tipo de Movimiento *</label>
+      <select
+        class="form__control"
+        [class.form__control--invalid]="f['tipoMovimiento'].invalid && f['tipoMovimiento'].touched"
+        formControlName="tipoMovimiento"
+      >
+        <option value="">-- Seleccionar --</option>
+        <option value="CREDITO">Crédito (depósito)</option>
+        <option value="DEBITO">Débito (retiro)</option>
+      </select>
+      <span class="form__error" *ngIf="f['tipoMovimiento'].touched && f['tipoMovimiento'].errors?.['required']">
+        El tipo es obligatorio.
+      </span>
+    </div>
+
+    <!-- Valor -->
+    <div class="form__group">
+      <label class="form__label">Valor *</label>
+      <input
+        class="form__control"
+        [class.form__control--invalid]="f['valor'].invalid && f['valor'].touched"
+        formControlName="valor"
+        type="number"
+        step="0.01"
+        placeholder="Ej: 500.00"
+      />
+      <span class="form__error" *ngIf="f['valor'].touched && f['valor'].errors?.['required']">
+        El valor es obligatorio.
+      </span>
+      <span class="form__error" *ngIf="f['valor'].touched && f['valor'].errors?.['min']">
+        El valor debe ser mayor a 0.
+      </span>
+    </div>
+
+    <!-- Cuenta -->
+    <div class="form__group form__group--span2">
+      <label class="form__label">Cuenta *</label>
+      <select
+        class="form__control"
+        [class.form__control--invalid]="f['numeroCuenta'].invalid && f['numeroCuenta'].touched"
+        formControlName="numeroCuenta"
+      >
+        <option value="">-- Seleccionar cuenta --</option>
+        <option *ngFor="let c of cuentas" [ngValue]="c.numeroCuenta">
+          {{ c.numeroCuenta }} — {{ c.tipoCuenta }} (Saldo: {{ c.saldo !== undefined ? (c.saldo | number:'1.2-2') : (c.saldoInicial | number:'1.2-2') }})
+        </option>
+      </select>
+      <span class="form__error" *ngIf="f['numeroCuenta'].touched && f['numeroCuenta'].errors?.['required']">
+        Debe seleccionar una cuenta.
+      </span>
+    </div>
+
+  </div>
+
+  <div class="form__actions">
+    <button type="button" class="btn btn--secondary" (click)="onCancel()">Cancelar</button>
+    <button type="submit" class="btn btn--primary" [disabled]="submitting">
+      {{ submitting ? 'Guardando...' : (isEditing ? 'Actualizar' : 'Registrar') }}
+    </button>
+  </div>
+</form>

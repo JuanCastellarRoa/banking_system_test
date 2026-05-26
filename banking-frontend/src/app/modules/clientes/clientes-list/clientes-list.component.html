@@ -1,0 +1,70 @@
+<div class="page">
+  <!-- Header -->
+  <div class="page__header">
+    <h2 class="page__title">Clientes</h2>
+    <button class="btn btn--primary" (click)="openCreate()">Nuevo</button>
+  </div>
+
+  <!-- Search -->
+  <div class="page__toolbar">
+    <input
+      class="search-input"
+      type="text"
+      placeholder="Buscar por nombre, identificación o teléfono..."
+      (input)="onSearch($event)"
+    />
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrapper">
+    <div class="loading" *ngIf="loading">Cargando...</div>
+
+    <table *ngIf="!loading">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Género</th>
+          <th>Edad</th>
+          <th>Identificación</th>
+          <th>Dirección</th>
+          <th>Teléfono</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let cliente of filteredClientes">
+          <td>{{ cliente.nombre }}</td>
+          <td>{{ cliente.genero }}</td>
+          <td>{{ cliente.edad }}</td>
+          <td>{{ cliente.identificacion }}</td>
+          <td>{{ cliente.direccion }}</td>
+          <td>{{ cliente.telefono }}</td>
+          <td>
+            <span class="badge" [class.badge--active]="cliente.estado" [class.badge--inactive]="!cliente.estado">
+              {{ cliente.estado ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+          <td class="actions">
+            <button class="btn btn--sm btn--outline" (click)="openEdit(cliente)">Editar</button>
+            <button class="btn btn--sm btn--danger" (click)="delete(cliente)">Eliminar</button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredClientes.length === 0">
+          <td colspan="8" class="empty">No se encontraron clientes.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" *ngIf="showForm" (click)="closeForm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <app-clientes-form
+        [cliente]="selectedCliente"
+        (saved)="onSaved()"
+        (cancelled)="closeForm()"
+      ></app-clientes-form>
+    </div>
+  </div>
+</div>

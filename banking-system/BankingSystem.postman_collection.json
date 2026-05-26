@@ -1,0 +1,207 @@
+{
+  "info": {
+    "_postman_id": "banco-sistema-001",
+    "name": "Banking System API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:8080"}
+  ],
+  "item": [
+    {
+      "name": "Clientes",
+      "item": [
+        {
+          "name": "Crear Cliente",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/clientes",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": \"jlema\",\n  \"nombre\": \"Jose Lema\",\n  \"genero\": \"Masculino\",\n  \"edad\": 35,\n  \"identificacion\": \"1700000001\",\n  \"direccion\": \"Otavalo sn y principal\",\n  \"telefono\": \"098254785\",\n  \"contrasena\": \"1234\",\n  \"estado\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar Clientes",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/clientes"
+          }
+        },
+        {
+          "name": "Obtener Cliente por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/clientes/jlema"
+          }
+        },
+        {
+          "name": "Actualizar Cliente (PUT)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/clientes/jlema",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": \"jlema\",\n  \"nombre\": \"Jose Lema Actualizado\",\n  \"genero\": \"Masculino\",\n  \"edad\": 36,\n  \"identificacion\": \"1700000001\",\n  \"direccion\": \"Nueva Dirección 123\",\n  \"telefono\": \"099000000\",\n  \"contrasena\": \"nuevaPass\",\n  \"estado\": true\n}"
+            }
+          }
+        },
+        {
+          "name": "Actualizar Parcial Cliente (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/clientes/jlema",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"telefono\": \"099111222\",\n  \"estado\": false\n}"
+            }
+          }
+        },
+        {
+          "name": "Eliminar Cliente",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/clientes/jlema"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cuentas",
+      "item": [
+        {
+          "name": "Crear Cuenta",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/cuentas",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numeroCuenta\": 478758,\n  \"tipoCuenta\": \"AHORRO\",\n  \"saldoInicial\": 2000,\n  \"estado\": true,\n  \"clienteId\": \"jlema\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar Cuentas",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/cuentas"
+          }
+        },
+        {
+          "name": "Obtener Cuenta",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/cuentas/478758"
+          }
+        },
+        {
+          "name": "Actualizar Cuenta (PUT)",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/cuentas/478758",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numeroCuenta\": 478758,\n  \"tipoCuenta\": \"AHORRO\",\n  \"saldoInicial\": 2500,\n  \"estado\": true,\n  \"clienteId\": \"jlema\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Actualizar Parcial Cuenta (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/cuentas/478758",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": false\n}"
+            }
+          }
+        },
+        {
+          "name": "Eliminar Cuenta",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/cuentas/478758"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Movimientos",
+      "item": [
+        {
+          "name": "Registrar Débito",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/movimientos",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numeroCuenta\": 478758,\n  \"valor\": -575.00\n}"
+            }
+          }
+        },
+        {
+          "name": "Registrar Crédito",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/movimientos",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"numeroCuenta\": 225487,\n  \"valor\": 600.00\n}"
+            }
+          }
+        },
+        {
+          "name": "Listar Movimientos",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/movimientos"
+          }
+        },
+        {
+          "name": "Obtener Movimiento",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/movimientos/1"
+          }
+        },
+        {
+          "name": "Eliminar Movimiento",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/movimientos/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reportes",
+      "item": [
+        {
+          "name": "Generar Reporte PDF",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/reportes?fechaInicio=2025-01-01&fechaFin=2025-12-31&cliente=jlema",
+              "host": ["{{baseUrl}}"],
+              "path": ["reportes"],
+              "query": [
+                {"key": "fechaInicio", "value": "2025-01-01"},
+                {"key": "fechaFin",    "value": "2025-12-31"},
+                {"key": "cliente",     "value": "jlema"}
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,64 @@
+<div class="page">
+  <div class="page__header">
+    <h2 class="page__title">Cuentas</h2>
+    <button class="btn btn--primary" (click)="openCreate()">Nuevo</button>
+  </div>
+
+  <div class="page__toolbar">
+    <input
+      class="search-input"
+      type="text"
+      placeholder="Buscar por número, tipo o cliente..."
+      (input)="onSearch($event)"
+    />
+  </div>
+
+  <div class="table-wrapper">
+    <div class="loading" *ngIf="loading">Cargando...</div>
+
+    <table *ngIf="!loading">
+      <thead>
+        <tr>
+          <th>Número Cuenta</th>
+          <th>Tipo</th>
+          <th>Saldo Inicial</th>
+          <th>Saldo Actual</th>
+          <th>Cliente</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let cuenta of filteredCuentas">
+          <td>{{ cuenta.numeroCuenta }}</td>
+          <td>{{ cuenta.tipoCuenta }}</td>
+          <td>{{ cuenta.saldoInicial | number:'1.2-2' }}</td>
+          <td>{{ cuenta.saldo !== undefined ? (cuenta.saldo | number:'1.2-2') : '—' }}</td>
+          <td>{{ cuenta.clienteNombre ?? cuenta.clienteId }}</td>
+          <td>
+            <span class="badge" [class.badge--active]="cuenta.estado" [class.badge--inactive]="!cuenta.estado">
+              {{ cuenta.estado ? 'Activa' : 'Inactiva' }}
+            </span>
+          </td>
+          <td class="actions">
+            <button class="btn btn--sm btn--outline" (click)="openEdit(cuenta)">Editar</button>
+            <button class="btn btn--sm btn--danger" (click)="delete(cuenta)">Eliminar</button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredCuentas.length === 0">
+          <td colspan="7" class="empty">No se encontraron cuentas.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showForm" (click)="closeForm()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <app-cuentas-form
+        [cuenta]="selectedCuenta"
+        (saved)="onSaved()"
+        (cancelled)="closeForm()"
+      ></app-cuentas-form>
+    </div>
+  </div>
+</div>

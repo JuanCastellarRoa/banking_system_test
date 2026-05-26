@@ -1,0 +1,51 @@
+@use './styles/page';
+
+/* ============================================================
+   Global Reset & Base Styles — NO external CSS frameworks
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  color: #1e293b;
+  background-color: #f8fafc;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 0.875rem;
+}
+
+input, select, textarea {
+  font-family: inherit;
+  font-size: 0.875rem;
+  outline: none;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+/* ============================================================
+   Utility classes
+   ============================================================ */
+
+.text-danger  { color: #ef4444; }
+.text-success { color: #22c55e; }
+.text-muted   { color: #64748b; font-size: 0.75rem; }

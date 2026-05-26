@@ -1,0 +1,26 @@
+<div class="shell">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar__brand">BANCO</div>
+    <nav class="sidebar__nav">
+      <a routerLink="/clientes" routerLinkActive="sidebar__nav-link--active" class="sidebar__nav-link">
+        Clientes
+      </a>
+      <a routerLink="/cuentas" routerLinkActive="sidebar__nav-link--active" class="sidebar__nav-link">
+        Cuentas
+      </a>
+      <a routerLink="/movimientos" routerLinkActive="sidebar__nav-link--active" class="sidebar__nav-link">
+        Movimientos
+      </a>
+      <a routerLink="/reportes" routerLinkActive="sidebar__nav-link--active" class="sidebar__nav-link">
+        Reportes
+      </a>
+    </nav>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <app-notification></app-notification>
+    <router-outlet></router-outlet>
+  </main>
+</div>
