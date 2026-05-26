@@ -40,5 +40,7 @@ Credenciales Postgres (definidas en `docker-compose.yml`):
 - PASSWORD: `banco_pass`
 
 Notas importantes:
-- En `docker-compose.yml` el servicio `backend` recibe la variable `SPRING_JPA_HIBERNATE_DDL_AUTO=update` para crear/actualizar el esquema en entornos de desarrollo. Quítala para entornos de producción.
+- En `docker-compose.yml` el servicio `backend` recibe la variable `SPRING_JPA_HIBERNATE_DDL_AUTO=update` para crear/actualizar el esquema en entornos de desarrollo.
 - Si tienes datos previos o quieres persistencia, el volumen `db-data` mantiene los datos de Postgres.
+- En la carpeta banking-system la cual pertenece al backend se encuentra la coleción BankingSystem.postman_collection.json para probar los endpoints
+
